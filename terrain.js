@@ -10,11 +10,11 @@ pc.script.create('terrain', function (context) {
     Terrain.prototype = {
         // Called once after all resources are loaded and before the first update
         initialize: function () {
-            PerlinNoise = function() {
+            PerlinNoise = new function() {
 
             this.noise = function(x, y, z) {
             
-               var p = new Array(512)
+               var p = new Array(512);
                var permutation = [ 151,160,137,91,90,15,
                131,13,201,95,96,53,194,233,7,225,140,36,103,30,69,142,8,99,37,240,21,10,23,
                190, 6,148,247,120,234,75,0,26,197,62,94,252,219,203,117,35,11,32,57,177,33,
@@ -52,7 +52,7 @@ pc.script.create('terrain', function (context) {
                                                  grad(p[BA+1], x-1, y  , z-1 )), // OF CUBE
                                          lerp(u, grad(p[AB+1], x  , y-1, z-1 ),
                                                  grad(p[BB+1], x-1, y-1, z-1 )))));
-               }
+               };
                function fade(t) { return t * t * t * (t * (t * 6 - 15) + 10); }
                function lerp( t, a, b) { return a + t * (b - a); }
                function grad(hash, x, y, z) {
@@ -65,32 +65,42 @@ pc.script.create('terrain', function (context) {
             };
             var xs = 64;
             var zs = 64;
+            var maxHeight = 20.0;
             
             var heightMap = [];
-            var s = pc.math.random(0.0, 1.0);
             for(z = 0; z < zs; z++){
                 for(x = 0; x <  xs; x++){
                     var nx = x / xs;
                     var nz = z / zs;
-                    heightMap.push(PerlinNoise.noise(nx, nz, 20.0));
+                    heightMap.push(PerlinNoise.noise(nx, nz, 25.0));
                 }
             }
       
-            //var vertices = this.randomTerrain(xs, zs);
-            var maxHeight = 20.0;
-            var vertices = this.terrainFromHeightMap(xs, zs, maxHeight, heightMap);
             
+            var vertices = this.terrainFromHeightMap(xs, zs, 0, 0, maxHeight, heightMap);
+            
+            this.generateTerrain(xs, zs, vertices);
+            
+            heightMap = [];
+            for(z = 0; z < zs; z++){
+                for(x = 63; x <  xs*2-1; x++){
+                    nx = x / xs;
+                    nz = z / zs;
+                    heightMap.push(PerlinNoise.noise(nx, nz, 25.0));
+                }
+            }
+            vertices = this.terrainFromHeightMap(xs, zs, 63, 0, maxHeight, heightMap);
             
             this.generateTerrain(xs, zs, vertices);
         },
         
-        terrainFromHeightMap: function (xs, zs, maxHeight, heightMap) {
+        terrainFromHeightMap: function (xs, zs, ox, oz, maxHeight, heightMap) {
             var vertices = [];
             
             for (z = 0; z < zs; z++) {
                 for (x = 0; x < xs; x++) {
                     y = heightMap[x + z*zs];
-                    vertices.push(new pc.Vec3(x, y*maxHeight, -z));
+                    vertices.push(new pc.Vec3(x+ox, y*maxHeight, -z-oz));
                 }
             }
             return vertices;
