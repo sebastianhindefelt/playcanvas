@@ -121,7 +121,8 @@ pc.script.create('terrain', function (context) {
         generateTerrain: function (xs, zs, vertices) {
             var format = new pc.gfx.VertexFormat(context.graphicsDevice, [
                 { semantic: pc.gfx.SEMANTIC_POSITION, components: 3, type: pc.gfx.ELEMENTTYPE_FLOAT32 },
-                { semantic: pc.gfx.SEMANTIC_NORMAL, components: 3, type: pc.gfx.ELEMENTTYPE_FLOAT32 }
+                { semantic: pc.gfx.SEMANTIC_NORMAL, components: 3, type: pc.gfx.ELEMENTTYPE_FLOAT32 },
+                { semantic: pc.gfx.SEMANTIC_COLOR, components: 4, type: pc.gfx.ELEMENTTYPE_FLOAT32 }
             ]);
 
             var numVertices = xs*zs;
@@ -190,6 +191,7 @@ pc.script.create('terrain', function (context) {
                 
                 iterator.element[pc.gfx.SEMANTIC_POSITION].set(vertices[i].x, vertices[i].y, vertices[i].z);
                 iterator.element[pc.gfx.SEMANTIC_NORMAL].set(normals[i].x, normals[i].y, normals[i].z);
+                iterator.element[pc.gfx.SEMANTIC_COLOR].set(1.0, 0.0, 0.0, 1.0);
                 iterator.next();
             }
             
@@ -213,11 +215,14 @@ pc.script.create('terrain', function (context) {
             mesh.primitive[0].indexed = true;
             
             var node = new pc.scene.GraphNode();
-            var material = new pc.scene.PhongMaterial();
-            material.diffuse.set(0.0, 0.7, 0.0);
-            material.ambient.set(0.5, 0.5, 0.5);
-            material.update();
             
+            var material = new pc.scene.PhongMaterial();
+            //material.diffuse.set(0.0, 0.7, 0.0);
+            //material.ambient.set(0.5, 0.5, 0.5);
+            material.diffuse.set(pc.math.random(0, 1), pc.math.random(0, 1), pc.math.random(0, 1));
+            material.ambient.set(pc.math.random(0, 1), pc.math.random(0, 1), pc.math.random(0, 1));
+            material.update();
+             
             var meshInstance = new pc.scene.MeshInstance(node, mesh, material);
             var model = new pc.scene.Model();
             model.graph = node;
